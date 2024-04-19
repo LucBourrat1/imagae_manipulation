@@ -14,8 +14,9 @@ This is an implementation of the following image manipulation models:
 # Installation
 Needs to clone the repo, and prepare a conda environment with latest pytorch.
 ```bash
-git clone
+git clone https://github.com/LucBourrat1/image_manipulation
 conda create -n image_manip python=3.11 -y
 conda activate image_manip
 pip3 install torch torchvision torchaudio
+pip install ./image_manipulation
 ```
