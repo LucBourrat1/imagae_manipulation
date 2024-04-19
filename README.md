@@ -16,5 +16,6 @@ Needs to clone the repo, and prepare a conda environment with latest pytorch.
 ```bash
 git clone
 conda create -n image_manip python=3.11 -y
+conda activate image_manip
 pip3 install torch torchvision torchaudio
 ```

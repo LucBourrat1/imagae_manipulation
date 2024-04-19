@@ -1,4 +1,4 @@
 [project]
 name = "image_manipulation"
 version = "0.1"
-dependencies = ["matplotlib"]
+dependencies = ["torch_snippets"]
