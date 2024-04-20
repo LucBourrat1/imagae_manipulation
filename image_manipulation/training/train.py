@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from image_manipulation.models.vanilla_aec import VanillaAutoEncoder
-from image_manipulation.models.conv_aec import ConvAutoEncoder
 from torch_snippets import *
 from image_manipulation.datasets.mnist import MnistDataset
 from image_manipulation.config.config import load_config
@@ -36,7 +34,6 @@ def validate_batch(input, model, criterion):
 
 
 def train(cfg, trn_dl, val_dl):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = load_model(cfg.train.model)
     print(f"[INFO] Training {cfg.train.model} for {cfg.train.nb_epochs} epochs..")
     criterion = nn.MSELoss()
