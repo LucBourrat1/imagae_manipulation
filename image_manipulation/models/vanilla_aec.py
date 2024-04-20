@@ -1,10 +1,12 @@
 from torch import nn
+import lightning as L
+import torch
 
 
-class VanillaAutoEncoder(nn.Module):
+class LitVanillaAutoEncoder(L.LightningModule):
     """An implementation of a vanilla autoencoder"""
 
-    def __init__(self, latent_dim):
+    def __init__(self, lr, latent_dim):
         super().__init__()
         self.latent_dim = latent_dim
         self.encoder = nn.Sequential(
@@ -22,10 +24,34 @@ class VanillaAutoEncoder(nn.Module):
             nn.Linear(128, 28 * 28),
             nn.Tanh(),
         )
+        self.loss_func = nn.MSELoss()
+        self.lr = lr
+
+    def embeddings(self, x):
+        x = x.view(len(x), -1)
+        return self.encoder(x)
 
     def forward(self, x):
         x = x.view(len(x), -1)
         x = self.encoder(x)
         x = self.decoder(x)
-        x = x.view(len(x), 1, 28, 28)
-        return x
+        output = x.view(len(x), 1, 28, 28)
+        return output
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=1e-5)
+        return optimizer
+
+    def training_step(self, train_batch, batch_idx):
+        x, _ = train_batch
+        output = self.forward(x)
+        loss = self.loss_func(output, x)
+        self.log("train_loss", loss, on_epoch=True)
+        return loss
+
+    def validation_step(self, val_batch, batch_idx):
+        x, _ = val_batch
+        output = self.forward(x)
+        loss = self.loss_func(output, x)
+        self.log("val_loss", loss, on_epoch=True)
+        return loss

@@ -1,6 +1,6 @@
 from torch_snippets import *
 from image_manipulation.datasets.mnist import MnistDataset
-from image_manipulation.scripts.utils import load_model
+from image_manipulation.scripts.utils import load_model_from_ckpt
 from image_manipulation.config.config import load_config
 import argparse
 
@@ -29,9 +29,6 @@ def inference(model, val_ds):
 if __name__ == "__main__":
     args = parser()
     cfg = load_config(args.cfg)
-    model = load_model(cfg.inference.model)
-    state_dict = torch.load(cfg.inference.weights)
-    model.load_state_dict(state_dict)
-    model.to(device)
+    model = load_model_from_ckpt(cfg.inference.model, cfg.inference.weights)
     val_ds = MnistDataset(batch_size=256).val_ds
     inference(model, val_ds)
