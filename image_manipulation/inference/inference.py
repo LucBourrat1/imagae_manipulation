@@ -1,6 +1,16 @@
-from image_manipulation.models.vanilla_autoencoder import VanillaAutoEncoder
 from torch_snippets import *
 from image_manipulation.datasets.mnist import MnistDataset
+from image_manipulation.scripts.utils import load_model
+from image_manipulation.config.config import load_config
+import argparse
+
+
+def parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--cfg", type=str, default="../config.yaml", help="path to the config.yaml file"
+    )
+    return parser.parse_args()
 
 
 def inference(model, val_ds):
@@ -8,7 +18,7 @@ def inference(model, val_ds):
         ix = np.random.randint(len(val_ds))
         im, _ = val_ds[ix]
         _im = model(im[None])[0]
-        fig, ax = plt.subplots(1, 2, figsize=(3, 3))
+        fig, ax = plt.subplots(1, 2, figsize=(8, 8))
         show(im[0], ax=ax[0], title="input")
         show(_im[0], ax=ax[1], title="prediction")
         plt.tight_layout()
@@ -17,16 +27,11 @@ def inference(model, val_ds):
 
 
 if __name__ == "__main__":
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = VanillaAutoEncoder(latent_dim=3)
-    state_dict = torch.load("../training/vanilla_ae.pth")
+    args = parser()
+    cfg = load_config(args.cfg)
+    model = load_model(cfg.inference.model)
+    state_dict = torch.load(cfg.inference.weights)
     model.load_state_dict(state_dict)
     model.to(device)
     val_ds = MnistDataset(batch_size=256).val_ds
-
-    ix = np.random.randint(len(val_ds))
-    # im, _ = val_ds[ix]
-    # print(im.shape)
-    # _im = model(im[None])
-    # print(_im.shape)
     inference(model, val_ds)

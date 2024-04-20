@@ -1,3 +1,4 @@
 .ipynb_checkpoints/
 __pycache__/
+*.pth
 image_manipulation.egg-info/
