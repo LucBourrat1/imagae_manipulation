@@ -1,9 +1,10 @@
 train:
-  model: vanilla_aec
+  model: conv_aec
   batch_size: 256
-  nb_epochs: 5
+  nb_epochs: 20
   learning_rate: 0.001
+  version: 0
 
 inference:
-  model: vanilla_aec
-  weights: ../training/vanilla_aec.ckpt
+  model: conv_aec
+  weights: ../training/conv_aec.ckpt
