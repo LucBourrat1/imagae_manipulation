@@ -26,5 +26,5 @@ def train(cfg, trn_dl, val_dl):
 if __name__ == "__main__":
     args = parser()
     cfg = load_config(args.cfg)
-    trn_dl, val_dl = MnistDataset(batch_size=256).get_dataloaders()
+    trn_dl, val_dl = MnistDataset(batch_size=cfg.train.batch_size).get_dataloaders()
     train(cfg, trn_dl, val_dl)

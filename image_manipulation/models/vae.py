@@ -26,8 +26,8 @@ class LitVAE(L.LightningModule):
 
     def sampling(self, mean, log_var):
         std = torch.exp(0.5 * log_var)
-        eps = torch.rand_like(std)
-        return eps.mul(std).add(mean)
+        eps = torch.randn_like(std)
+        return eps.mul(std).add_(mean)
 
     def decoder(self, z):
         h = F.relu(self.d4(z))
@@ -79,7 +79,8 @@ class LitVAE(L.LightningModule):
         return loss
 
     def on_validation_epoch_end(self):
-        z = torch.randn(64, 50)
-        sample = self.decoder(z)
-        grid = make_grid(sample.view(64, 1, 28, 28))
-        self.logger.experiment.add_image("output_images", grid, self.global_step)
+        with torch.no_grad():
+            z = torch.randn(64, 50)
+            sample = self.decoder(z)
+            images = make_grid(sample.view(64, 1, 28, 28))
+            self.logger.experiment.add_image("output_images", images, self.global_step)

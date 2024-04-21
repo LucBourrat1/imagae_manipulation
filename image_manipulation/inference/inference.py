@@ -13,13 +13,15 @@ def parser():
     return parser.parse_args()
 
 
-def inference(model, val_ds):
+def inference(model, val_ds, cfg):
     for i in range(3):
         ix = np.random.randint(len(val_ds))
         im, _ = val_ds[ix]
         _im = model(im[None])[0]
+        if cfg.inference.model == "vae":
+            _im = _im.reshape(-1, 28, 28)
         fig, ax = plt.subplots(1, 2, figsize=(8, 8))
-        show(im[0], ax=ax[0], title="input")
+        show(im[0], ax=ax[0], title="input"
         show(_im[0], ax=ax[1], title="prediction")
         plt.tight_layout()
         plt.show()
@@ -31,4 +33,4 @@ if __name__ == "__main__":
     cfg = load_config(args.cfg)
     model = load_model_from_ckpt(cfg.inference.model, cfg.inference.weights)
     val_ds = MnistDataset(batch_size=256).val_ds
-    inference(model, val_ds)
+    inference(model, val_ds, cfg)

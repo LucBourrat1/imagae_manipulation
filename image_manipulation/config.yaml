@@ -1,6 +1,6 @@
 train:
   model: vae
-  batch_size: 256
+  batch_size: 64
   nb_epochs: 10
   learning_rate: 0.001
   version: 0
