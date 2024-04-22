@@ -21,7 +21,7 @@ def inference(model, val_ds, cfg):
         if cfg.inference.model == "vae":
             _im = _im.reshape(-1, 28, 28)
         fig, ax = plt.subplots(1, 2, figsize=(8, 8))
-        show(im[0], ax=ax[0], title="input"
+        show(im[0], ax=ax[0], title="input")
         show(_im[0], ax=ax[1], title="prediction")
         plt.tight_layout()
         plt.show()

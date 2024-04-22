@@ -3,5 +3,7 @@ __pycache__/
 *.pth
 *.ckpt
 *.html
+*.png
+*.jpg
 MNIST/
 image_manipulation.egg-info/
