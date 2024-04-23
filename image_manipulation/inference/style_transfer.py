@@ -2,7 +2,9 @@ from torch_snippets import *
 from torchvision import transforms as T
 from torch.nn import functional as F
 from torchvision.models import vgg19
+import torch
 import argparse
+from PIL import Image
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -18,28 +20,22 @@ def parser():
     return parser.parse_args()
 
 
-def preprocess(x):
-    f = T.Compose(
-        [
-            T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            T.Lambda(lambda x: x.mul_(255)),
-        ]
-    )
-    return f(x)
-
-
-def postprocess(x):
-    f = T.Compose(
-        [
-            T.Lambda(lambda x: x.mul_(1.0 / 255)),
-            T.Normalize(
-                mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
-                std=[1 / 0.229, 1 / 0.224, 1 / 0.225],
-            ),
-        ]
-    )
-    return f(x)
+preprocess = T.Compose(
+    [
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        T.Lambda(lambda x: x.mul_(255)),
+    ]
+)
+postprocess = T.Compose(
+    [
+        T.Lambda(lambda x: x.mul_(1.0 / 255)),
+        T.Normalize(
+            mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
+            std=[1 / 0.229, 1 / 0.224, 1 / 0.225],
+        ),
+    ]
+)
 
 
 def get_loss_funcs(style_layers, content_layers):
@@ -91,7 +87,7 @@ def main(args):
     # ]
     imgs = [
         Image.open(p).resize((512, 512)).convert("RGB")
-        for p in [args.content, args.style]
+        for p in [args.style, args.content]
     ]
     style_image, content_image = [preprocess(img).to(DEVICE)[None] for img in imgs]
     opt_img = content_image.data.clone()
@@ -129,8 +125,16 @@ def main(args):
         optimizer.step(closure)
 
     log.plot(log=True)
-    out_img = postprocess(opt_img[0]).permute(1, 2, 0)
-    show(out_img)
+    with torch.no_grad():
+        out_img = postprocess(opt_img[0]).permute(1, 2, 0)
+        i = out_img.detach().to("cpu").numpy()
+    px = 1 / plt.rcParams["figure.dpi"]  # pixel in inches
+    H, W = i.shape[:2]
+    plt.subplots(figsize=(W * px, H * px))
+    plt.imshow(i)
+    plt.axis("off")
+    plt.tight_layout()
+    plt.savefig("test.png")
 
 
 if __name__ == "__main__":
