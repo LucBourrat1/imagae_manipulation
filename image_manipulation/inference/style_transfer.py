@@ -139,7 +139,7 @@ def main(args):
     plt.imshow(i)
     plt.axis("off")
     plt.tight_layout()
-    plt.savefig("output.png")
+    plt.savefig(f"{cfg['out_name']}.png")
 
 
 if __name__ == "__main__":
