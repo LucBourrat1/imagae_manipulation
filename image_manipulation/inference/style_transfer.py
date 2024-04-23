@@ -5,6 +5,10 @@ from torchvision.models import vgg19
 import torch
 import argparse
 from PIL import Image
+import yaml
+import warnings
+
+warnings.filterwarnings("ignore")
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -12,12 +16,15 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--content", type=str, default="60.jpg", help="path to the content image"
-    )
-    parser.add_argument(
-        "--style", type=str, default="style_image.png", help="path to the style image"
+        "--cfg", type=str, default="../config_st.yaml", help="path to the config file"
     )
     return parser.parse_args()
+
+
+def load_config(file_path):
+    with open(file_path, "r") as f:
+        config_dict = yaml.safe_load(f)
+    return config_dict
 
 
 preprocess = T.Compose(
@@ -80,14 +87,11 @@ class vgg19_modified(nn.Module):
 
 
 def main(args):
+    cfg = load_config(args.cfg)
     vgg = vgg19_modified().to(DEVICE)
-    # imgs = [
-    #     Image.open(path).resize((512, 512)).convert("RGB")
-    #     for path in ["style_image.png", "60.jpg"]
-    # ]
     imgs = [
         Image.open(p).resize((512, 512)).convert("RGB")
-        for p in [args.style, args.content]
+        for p in [cfg["style"], cfg["content"]]
     ]
     style_image, content_image = [preprocess(img).to(DEVICE)[None] for img in imgs]
     opt_img = content_image.data.clone()
@@ -107,6 +111,7 @@ def main(args):
     log = Report(max_iters)
     global iters
     iters = 0
+    print(f"[INFO] Performing style transfering for {max_iters} epochs...")
     while iters < max_iters:
 
         def closure():
@@ -134,7 +139,7 @@ def main(args):
     plt.imshow(i)
     plt.axis("off")
     plt.tight_layout()
-    plt.savefig("test.png")
+    plt.savefig("output.png")
 
 
 if __name__ == "__main__":
