@@ -1,5 +1,6 @@
 from torch_snippets import *
 import lightning as L
+from torchvision.utils import make_grid
 
 
 def _ConvLayer(input_features, output_features):
@@ -55,6 +56,8 @@ class ConvVae(L.LightningModule):
             nn.Conv2d(64, 3, kernel_size=3, padding=1),
             nn.Sigmoid(),
         )
+        self.state = []
+        self.epoch = -1
 
     def forward(self, x, select="A"):
         if select == "A":
@@ -98,6 +101,24 @@ class ConvVae(L.LightningModule):
 
         optA.step()
         optB.step()
-
         self.log_dict({"lossA": lossA.item(), "lossB": lossB.item()})
+        self.state.append(train_batch)
         return
+
+    def on_train_epoch_end(self):
+        self.epoch += 1
+        bs = 5
+        with torch.no_grad():
+            last_batch = self.state[-1]
+            a, b, A, B = last_batch
+            _a = self.forward(a[:bs], "A")
+            _b = self.forward(a[:bs], "B")
+            sample = torch.cat([A[:bs], _a, _b])
+            images = make_grid(sample.view(15, 3, 64, 64), nrow=5, padding=10)
+            self.logger.experiment.add_image("A to B", images, self.global_step)
+
+            _a = self.forward(b[:bs], "A")
+            _b = self.forward(b[:bs], "B")
+            sample = torch.cat([B[:bs], _a, _b])
+            images = make_grid(sample.view(15, 3, 64, 64), nrow=5, padding=10)
+            self.logger.experiment.add_image("B to A", images, self.global_step)
